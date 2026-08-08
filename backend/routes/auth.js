@@ -14,6 +14,8 @@ function getOAuth2Client() {
 // Generate an OAuth URL and redirect there
 router.get('/google', (req, res) => {
   const oauth2Client = getOAuth2Client();
+  const redirectUri = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/auth/google/callback';
+  console.log('Generating OAuth URL with redirectUri:', redirectUri);
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: [
