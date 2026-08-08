@@ -2,17 +2,18 @@ const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
 
-const redirectUri = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/auth/google/callback';
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  redirectUri
-);
+function getOAuth2Client() {
+  const redirectUri = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:5000/auth/google/callback';
+  return new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri
+  );
+}
 
 // Generate an OAuth URL and redirect there
 router.get('/google', (req, res) => {
+  const oauth2Client = getOAuth2Client();
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: [
@@ -24,6 +25,8 @@ router.get('/google', (req, res) => {
 
 // Handle the OAuth 2.0 server response
 router.get('/google/callback', async (req, res) => {
+  const oauth2Client = getOAuth2Client();
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const { code } = req.query;
   try {
     const { tokens } = await oauth2Client.getToken(code);
